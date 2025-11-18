@@ -2,7 +2,26 @@ from dndgame.character import Character
 from dndgame.dice import roll
 
 
-def create_character():
+def create_character() -> Character:
+    """Create a new character through user input.
+    
+    Prompts the user to enter a character name and choose a race.
+    After creation, the character's stats are rolled and racial
+    bonuses are applied.
+    
+    Returns:
+        A fully initialized Character object with rolled stats.
+        
+    Example:
+        >>> player = create_character()
+        Welcome to D&D Adventure!
+        Enter your character's name: Aragorn
+        Choose your race:
+        1. Human (+1 to all stats)
+        2. Elf (+2 DEX)
+        3. Dwarf (+2 CON)
+        Enter choice (1-3): 1
+    """
     print("Welcome to D&D Adventure!")
     name = input("Enter your character's name: ")
 
@@ -20,7 +39,30 @@ def create_character():
     return character
 
 
-def display_character(character):
+def display_character(character: Character) -> None:
+    """Display character information including stats and HP.
+    
+    Prints the character's name, race, ability scores with modifiers,
+    and current hit points to the console.
+    
+    Args:
+        character: The character to display.
+        
+    Example:
+        >>> display_character(player)
+        
+        Aragorn the Human
+        
+        Stats:
+        STR: 16 (+3)
+        DEX: 14 (+2)
+        CON: 15 (+2)
+        INT: 12 (+1)
+        WIS: 10 (+0)
+        CHA: 13 (+1)
+        
+        HP: 12
+    """
     print(f"\n{character.name} the {character.race}")
     print("\nStats:")
     for stat, value in character.stats.items():
@@ -29,7 +71,33 @@ def display_character(character):
     print(f"\nHP: {character.hp}")
 
 
-def simple_combat(player):
+def simple_combat(player: Character) -> bool:
+    """Run a simple combat encounter with a goblin.
+    
+    The player faces a goblin with 5 HP. Each turn, the player can
+    choose to attack (rolling 1d20 vs AC 10, dealing 1d4 damage) or
+    run away. Combat continues until the goblin is defeated or the
+    player flees.
+    
+    Args:
+        player: The player's character.
+        
+    Returns:
+        True if the player defeated the goblin, False if they ran away.
+        
+    Note:
+        Currently, the goblin does not attack back. This will be fixed
+        in later refactoring when we use the Combat class properly.
+        
+    Example:
+        >>> victory = simple_combat(player)
+        A goblin appears!
+        
+        Goblin HP: 5
+        Your turn!
+        1. Attack
+        2. Run away
+    """
     print("\nA goblin appears!")
     goblin_hp = 5
 
@@ -55,7 +123,18 @@ def simple_combat(player):
     return True
 
 
-def main():
+def main() -> None:
+    """Main game loop.
+    
+    Presents the player with a menu to fight goblins, view their
+    character, or quit the game. The loop continues until the player
+    chooses to quit.
+    
+    Menu Options:
+        1. Fight a goblin - Engage in simple combat
+        2. View character - Display character stats
+        3. Quit - Exit the game
+    """
     player = create_character()
 
     while True:
