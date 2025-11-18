@@ -1,13 +1,16 @@
-from typing import Dict
+from dndgame.entity import Entity
 from dndgame.dice import roll
 
 
-class Character:
+class Character(Entity):
     """Represents a player character in the D&D game.
     
     A character has ability scores (STR, DEX, CON, INT, WIS, CHA), hit points,
     and belongs to a specific race which provides stat bonuses. Characters can
     level up and engage in combat.
+    
+    Inherits from Entity and adds race-specific bonuses and character
+    progression mechanics.
     
     Attributes:
         name: The character's name.
@@ -21,8 +24,7 @@ class Character:
     
     Example:
         >>> character = Character("Aragorn", "Human", 10)
-        >>> character.roll_stats()
-        >>> character.apply_racial_bonuses()
+        >>> character.initialize_stats()
         >>> print(character.name)
         Aragorn
     """
@@ -35,36 +37,18 @@ class Character:
             race: The character's race (Human, Elf, or Dwarf).
             base_hp: Base hit points before modifiers.
         """
-        self.name: str = name
+        super().__init__(name, base_hp)
         self.race: str = race
-        self.stats: Dict[str, int] = {}
-        self.base_hp: int = base_hp
-        self.hp: int = 0
-        self.max_hp: int = 0
         self.level: int = 1
-        self.armor_class: int = 10
-
-    def get_modifier(self, stat: str) -> int:
-        """Calculate the ability modifier for a given stat.
+    
+    def initialize_stats(self) -> None:
+        """Initialize character stats by rolling and applying racial bonuses.
         
-        In D&D, ability modifiers are calculated as (stat - 10) // 2.
-        For example, a stat of 16 gives a modifier of +3.
-        
-        Args:
-            stat: The stat name (e.g., "STR", "DEX", "CON").
-            
-        Returns:
-            The modifier value (can be negative, zero, or positive).
-            
-        Example:
-            >>> character.stats["STR"] = 16
-            >>> character.get_modifier("STR")
-            3
-            >>> character.stats["CON"] = 8
-            >>> character.get_modifier("CON")
-            -1
+        This method rolls ability scores using 3d6 for each stat, then
+        applies racial bonuses based on the character's race.
         """
-        return (self.stats[stat] - 10) // 2
+        self.roll_stats()
+        self.apply_racial_bonuses()
 
     def roll_stats(self) -> None:
         """Roll ability scores for the character using 3d6.
@@ -109,3 +93,7 @@ class Character:
         elif self.race == "Human":
             for stat in self.stats:
                 self.stats[stat] += 1
+        
+        # Recalculate HP after CON bonus
+        self.max_hp = self.base_hp + self.get_modifier("CON")
+        self.hp = self.max_hp

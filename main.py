@@ -47,8 +47,7 @@ def create_character() -> Character:
     race = races[int(race_choice) - 1]
 
     character = Character(name, race, 10)
-    character.roll_stats()
-    character.apply_racial_bonuses()
+    character.initialize_stats()
     return character
 
 
