@@ -7,7 +7,7 @@ def create_character() -> Character:
     
     Prompts the user to enter a character name and choose a race.
     After creation, the character's stats are rolled and racial
-    bonuses are applied.
+    bonuses are applied. Validates all user input.
     
     Returns:
         A fully initialized Character object with rolled stats.
@@ -23,15 +23,28 @@ def create_character() -> Character:
         Enter choice (1-3): 1
     """
     print("Welcome to D&D Adventure!")
-    name = input("Enter your character's name: ")
+    
+    # Validate name input
+    name = input("Enter your character's name: ").strip()
+    while not name:
+        print("Name cannot be empty!")
+        name = input("Enter your character's name: ").strip()
 
     print("\nChoose your race:")
     print("1. Human (+1 to all stats)")
     print("2. Elf (+2 DEX)")
     print("3. Dwarf (+2 CON)")
-    race_choice = input("Enter choice (1-3): ")
+    
+    # Validate race choice
+    while True:
+        race_choice = input("Enter choice (1-3): ").strip()
+        if race_choice in ["1", "2", "3"]:
+            break
+        print("Invalid choice! Please enter 1, 2, or 3.")
+    
     print("\n")
-    race = ["Human", "Elf", "Dwarf"][int(race_choice) - 1]
+    races = ["Human", "Elf", "Dwarf"]
+    race = races[int(race_choice) - 1]
 
     character = Character(name, race, 10)
     character.roll_stats()
@@ -77,7 +90,7 @@ def simple_combat(player: Character) -> bool:
     The player faces a goblin with 5 HP. Each turn, the player can
     choose to attack (rolling 1d20 vs AC 10, dealing 1d4 damage) or
     run away. Combat continues until the goblin is defeated or the
-    player flees.
+    player flees. Validates all user input.
     
     Args:
         player: The player's character.
@@ -108,7 +121,13 @@ def simple_combat(player: Character) -> bool:
         print("2. Run away")
         print()
 
-        choice = input("What do you do? ")
+        # Validate combat choice
+        while True:
+            choice = input("What do you do? ").strip()
+            if choice in ["1", "2"]:
+                break
+            print("Invalid choice! Please enter 1 or 2.")
+        
         if choice == "1":
             attack = roll(20, 1)
             if attack >= 10:
@@ -128,7 +147,7 @@ def main() -> None:
     
     Presents the player with a menu to fight goblins, view their
     character, or quit the game. The loop continues until the player
-    chooses to quit.
+    chooses to quit. Validates all user input.
     
     Menu Options:
         1. Fight a goblin - Engage in simple combat
@@ -143,7 +162,12 @@ def main() -> None:
         print("2. View character")
         print("3. Quit")
 
-        choice = input("Enter choice (1-3): ")
+        # Validate main menu choice
+        while True:
+            choice = input("Enter choice (1-3): ").strip()
+            if choice in ["1", "2", "3"]:
+                break
+            print("Invalid choice! Please enter 1, 2, or 3.")
 
         if choice == "1":
             victory = simple_combat(player)
@@ -154,6 +178,7 @@ def main() -> None:
         elif choice == "2":
             display_character(player)
         elif choice == "3":
+            print("Thanks for playing!")
             break
 
 
