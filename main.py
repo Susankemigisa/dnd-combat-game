@@ -1,5 +1,6 @@
 from dndgame.character import Character
-from dndgame.dice import roll
+from dndgame.enemy import create_goblin
+from dndgame.combat import Combat
 
 
 def create_character() -> Character:
@@ -80,65 +81,98 @@ def display_character(character: Character) -> None:
     for stat, value in character.stats.items():
         modifier = character.get_modifier(stat)
         print(f"{stat}: {value} ({'+' if modifier >= 0 else ''}{modifier})")
-    print(f"\nHP: {character.hp}")
+    print(f"\nHP: {character.hp}/{character.max_hp}")
 
 
-def simple_combat(player: Character) -> bool:
-    """Run a simple combat encounter with a goblin.
+def combat_encounter(player: Character) -> bool:
+    """Run a combat encounter using the Combat class.
     
-    The player faces a goblin with 5 HP. Each turn, the player can
-    choose to attack (rolling 1d20 vs AC 10, dealing 1d4 damage) or
-    run away. Combat continues until the goblin is defeated or the
-    player flees. Validates all user input.
+    The player faces a goblin in turn-based combat. Each combatant
+    acts in initiative order. The player can choose to attack or run away
+    on their turn. The goblin attacks automatically. Combat continues
+    until one side is defeated or the player flees.
     
     Args:
         player: The player's character.
         
     Returns:
-        True if the player defeated the goblin, False if they ran away.
-        
-    Note:
-        Currently, the goblin does not attack back. This will be fixed
-        in later refactoring when we use the Combat class properly.
+        True if the player won, False if the player lost or ran away.
         
     Example:
-        >>> victory = simple_combat(player)
+        >>> victory = combat_encounter(player)
         A goblin appears!
         
-        Goblin HP: 5
-        Your turn!
+        Initiative order: ['Hero', 'Goblin']
+        
+        --- Round 1 ---
+        Your HP: 12/12
+        Goblin HP: 7/7
         1. Attack
         2. Run away
     """
-    print("\nA goblin appears!")
-    goblin_hp = 5
-
-    while goblin_hp > 0:
-        print(f"\nGoblin HP: {goblin_hp}")
-        print("\nYour turn!")
-        print("1. Attack")
-        print("2. Run away")
-        print()
-
-        # Validate combat choice
-        while True:
-            choice = input("What do you do? ").strip()
-            if choice in ["1", "2"]:
-                break
-            print("Invalid choice! Please enter 1 or 2.")
+    print("\n" + "="*50)
+    print("A goblin appears!")
+    print("="*50)
+    
+    goblin = create_goblin()
+    combat = Combat(player, goblin)
+    combat.roll_initiative()
+    
+    print(f"\nInitiative order: {[c.name for c in combat.initiative_order]}")
+    
+    while not combat.is_combat_over():
+        combat.round += 1
+        print(f"\n{'='*50}")
+        print(f"--- Round {combat.round} ---")
+        print(f"{'='*50}")
         
-        if choice == "1":
-            attack = roll(20, 1)
-            if attack >= 10:
-                damage = roll(4, 1)
-                goblin_hp -= damage
-                print(f"You hit for {damage} damage!")
+        for combatant in combat.initiative_order:
+            if not combatant.is_alive():
+                continue
+            
+            # Determine opponent
+            opponent = goblin if combatant == player else player
+            
+            if combatant == player:
+                # Player's turn
+                print(f"\n{player.name}'s HP: {player.hp}/{player.max_hp}")
+                print(f"Goblin HP: {goblin.hp}/{goblin.max_hp}")
+                print("\nYour turn!")
+                print("1. Attack")
+                print("2. Run away")
+                
+                # Validate choice
+                while True:
+                    choice = input("\nWhat do you do? ").strip()
+                    if choice in ["1", "2"]:
+                        break
+                    print("Invalid choice! Please enter 1 or 2.")
+                
+                if choice == "2":
+                    print(f"\n{player.name} flees from combat!")
+                    return False
+                elif choice == "1":
+                    damage = combat.attack(player, goblin)
+                    if damage > 0:
+                        print(f"\n💥 You hit the goblin for {damage} damage!")
+                        if not goblin.is_alive():
+                            print(f"The goblin has been defeated!")
+                    else:
+                        print(f"\n❌ You missed!")
             else:
-                print("You missed!")
-        elif choice == "2":
-            return False
-
-    return True
+                # Enemy's turn
+                print(f"\n🗡️  {combatant.name}'s turn!")
+                damage = combat.attack(combatant, opponent)
+                if damage > 0:
+                    print(f"💥 The {combatant.name} hits you for {damage} damage!")
+                    if not opponent.is_alive():
+                        print(f"\n💀 You have been defeated by the {combatant.name}!")
+                        return False
+                else:
+                    print(f"❌ The {combatant.name} missed!")
+    
+    winner = combat.get_winner()
+    return winner == player
 
 
 def main() -> None:
@@ -146,38 +180,51 @@ def main() -> None:
     
     Presents the player with a menu to fight goblins, view their
     character, or quit the game. The loop continues until the player
-    chooses to quit. Validates all user input.
+    chooses to quit or the character dies. Validates all user input.
     
     Menu Options:
-        1. Fight a goblin - Engage in simple combat
+        1. Fight a goblin - Engage in combat
         2. View character - Display character stats
         3. Quit - Exit the game
     """
     player = create_character()
 
-    while True:
-        print("\nWhat would you like to do?")
+    while player.is_alive():
+        print("\n" + "="*50)
+        print("What would you like to do?")
+        print("="*50)
         print("1. Fight a goblin")
         print("2. View character")
         print("3. Quit")
 
         # Validate main menu choice
         while True:
-            choice = input("Enter choice (1-3): ").strip()
+            choice = input("\nEnter choice (1-3): ").strip()
             if choice in ["1", "2", "3"]:
                 break
             print("Invalid choice! Please enter 1, 2, or 3.")
 
         if choice == "1":
-            victory = simple_combat(player)
+            victory = combat_encounter(player)
             if victory:
-                print("You defeated the goblin!")
+                print("\n" + "="*50)
+                print("🎉 VICTORY! You defeated the goblin!")
+                print("="*50)
+            elif not player.is_alive():
+                print("\n" + "="*50)
+                print("💀 GAME OVER! Your character has fallen in battle.")
+                print("="*50)
+                break
             else:
-                print("You ran away!")
+                print("\n" + "="*50)
+                print("🏃 You escaped safely!")
+                print("="*50)
         elif choice == "2":
             display_character(player)
         elif choice == "3":
+            print("\n" + "="*50)
             print("Thanks for playing!")
+            print("="*50)
             break
 
 
