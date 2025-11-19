@@ -67,12 +67,26 @@ class Character(Entity):
         """
         print("Rolling stats...\n")
         stats = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-        for stat in stats:
-            print(f"Rolling {stat}...")
-            self.stats[stat] = roll(6, 3)
+        
+        # Use dictionary comprehension instead of loop
+        self.stats = {stat: self._roll_single_stat(stat) for stat in stats}
 
         self.max_hp = self.base_hp + self.get_modifier("CON")
         self.hp = self.max_hp
+    
+    def _roll_single_stat(self, stat: str) -> int:
+        """Roll a single ability score.
+        
+        Helper method for functional-style stat rolling.
+        
+        Args:
+            stat: The stat name to roll.
+            
+        Returns:
+            The rolled value.
+        """
+        print(f"Rolling {stat}...")
+        return roll(6, 3)
 
     def apply_racial_bonuses(self) -> None:
         """Apply racial stat bonuses using the race's apply_bonuses method.
