@@ -1,6 +1,7 @@
 from dndgame.character import Character
 from dndgame.enemy import create_goblin
 from dndgame.combat import Combat
+from dndgame.races import AVAILABLE_RACES
 
 
 def create_character() -> Character:
@@ -21,7 +22,8 @@ def create_character() -> Character:
         1. Human (+1 to all stats)
         2. Elf (+2 DEX)
         3. Dwarf (+2 CON)
-        Enter choice (1-3): 1
+        4. Halfling (+2 DEX, +1 CHA)
+        Enter choice (1-4): 1
     """
     print("Welcome to D&D Adventure!")
     
@@ -32,22 +34,22 @@ def create_character() -> Character:
         name = input("Enter your character's name: ").strip()
 
     print("\nChoose your race:")
-    print("1. Human (+1 to all stats)")
-    print("2. Elf (+2 DEX)")
-    print("3. Dwarf (+2 CON)")
+    races = list(AVAILABLE_RACES.keys())
+    for i, race_name in enumerate(races, 1):
+        race = AVAILABLE_RACES[race_name]
+        print(f"{i}. {race_name} ({race.description})")
     
     # Validate race choice
     while True:
-        race_choice = input("Enter choice (1-3): ").strip()
-        if race_choice in ["1", "2", "3"]:
+        race_choice = input(f"Enter choice (1-{len(races)}): ").strip()
+        if race_choice.isdigit() and 1 <= int(race_choice) <= len(races):
             break
-        print("Invalid choice! Please enter 1, 2, or 3.")
+        print(f"Invalid choice! Please enter 1-{len(races)}.")
     
     print("\n")
-    races = ["Human", "Elf", "Dwarf"]
-    race = races[int(race_choice) - 1]
-
-    character = Character(name, race, 10)
+    selected_race = AVAILABLE_RACES[races[int(race_choice) - 1]]
+    
+    character = Character(name, selected_race, 10)
     character.initialize_stats()
     return character
 
@@ -74,9 +76,9 @@ def display_character(character: Character) -> None:
         WIS: 10 (+0)
         CHA: 13 (+1)
         
-        HP: 12
+        HP: 12/12
     """
-    print(f"\n{character.name} the {character.race}")
+    print(f"\n{character.name} the {character.race.name}")
     print("\nStats:")
     for stat, value in character.stats.items():
         modifier = character.get_modifier(stat)

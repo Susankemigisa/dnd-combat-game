@@ -1,4 +1,5 @@
 from dndgame.entity import Entity
+from dndgame.races import Race
 from dndgame.dice import roll
 
 
@@ -14,7 +15,7 @@ class Character(Entity):
     
     Attributes:
         name: The character's name.
-        race: The character's race (Human, Elf, or Dwarf).
+        race: The character's Race object.
         stats: Dictionary mapping stat names to their values (e.g., {"STR": 14}).
         base_hp: Base hit points before Constitution modifier.
         hp: Current hit points.
@@ -23,22 +24,23 @@ class Character(Entity):
         armor_class: Defense rating, higher is better (default is 10).
     
     Example:
-        >>> character = Character("Aragorn", "Human", 10)
+        >>> from dndgame.races import Human
+        >>> character = Character("Aragorn", Human(), 10)
         >>> character.initialize_stats()
         >>> print(character.name)
         Aragorn
     """
     
-    def __init__(self, name: str, race: str, base_hp: int) -> None:
+    def __init__(self, name: str, race: Race, base_hp: int) -> None:
         """Initialize a new character.
         
         Args:
             name: The character's name.
-            race: The character's race (Human, Elf, or Dwarf).
+            race: The character's Race object.
             base_hp: Base hit points before modifiers.
         """
         super().__init__(name, base_hp)
-        self.race: str = race
+        self.race: Race = race
         self.level: int = 1
     
     def initialize_stats(self) -> None:
@@ -73,26 +75,15 @@ class Character(Entity):
         self.hp = self.max_hp
 
     def apply_racial_bonuses(self) -> None:
-        """Apply racial stat bonuses based on the character's race.
+        """Apply racial stat bonuses using the race's apply_bonuses method.
         
-        Different races receive different bonuses:
-        - Dwarf: +2 to Constitution (CON)
-        - Elf: +2 to Dexterity (DEX)
-        - Human: +1 to all ability scores
+        Delegates to the Race object to apply appropriate bonuses,
+        then recalculates HP based on the new Constitution score.
         
         This method should be called after roll_stats() to ensure
         stats have been initialized.
-        
-        Note:
-            If an unknown race is provided, no bonuses are applied.
         """
-        if self.race == "Dwarf":
-            self.stats["CON"] += 2
-        elif self.race == "Elf":
-            self.stats["DEX"] += 2
-        elif self.race == "Human":
-            for stat in self.stats:
-                self.stats[stat] += 1
+        self.race.apply_bonuses(self.stats)
         
         # Recalculate HP after CON bonus
         self.max_hp = self.base_hp + self.get_modifier("CON")
