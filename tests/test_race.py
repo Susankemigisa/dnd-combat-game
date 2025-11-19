@@ -14,7 +14,7 @@ def test_human_bonuses():
     human = Human()
     stats = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
     human.apply_bonuses(stats)
-    
+
     # All stats should be +1
     for stat, value in stats.items():
         assert value == 11
@@ -32,7 +32,7 @@ def test_elf_bonuses():
     elf = Elf()
     stats = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
     elf.apply_bonuses(stats)
-    
+
     assert stats["DEX"] == 12
     assert stats["STR"] == 10
     assert stats["CON"] == 10
@@ -50,7 +50,7 @@ def test_dwarf_bonuses():
     dwarf = Dwarf()
     stats = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
     dwarf.apply_bonuses(stats)
-    
+
     assert stats["CON"] == 12
     assert stats["STR"] == 10
     assert stats["DEX"] == 10
@@ -68,7 +68,7 @@ def test_halfling_bonuses():
     halfling = Halfling()
     stats = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
     halfling.apply_bonuses(stats)
-    
+
     assert stats["DEX"] == 12
     assert stats["CHA"] == 11
     assert stats["STR"] == 10
@@ -129,17 +129,17 @@ def test_race_bonuses_dont_affect_others():
     """Test that applying bonuses to one stat dict doesn't affect others."""
     human = Human()
     elf = Elf()
-    
+
     stats1 = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
     stats2 = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
-    
+
     human.apply_bonuses(stats1)
     elf.apply_bonuses(stats2)
-    
+
     # stats1 should have +1 to all
     assert stats1["STR"] == 11
     assert stats1["DEX"] == 11
-    
+
     # stats2 should only have +2 DEX
     assert stats2["STR"] == 10
     assert stats2["DEX"] == 12
