@@ -8,10 +8,6 @@ from dndgame.weapons import WEAPONS, get_weapon
 def create_character() -> Character:
     """Create a new character through user input.
     
-    Prompts the user to enter a character name and choose a race.
-    After creation, the character's stats are rolled and racial
-    bonuses are applied. Validates all user input.
-    
     Returns:
         A fully initialized Character object with rolled stats.
     """
@@ -78,19 +74,20 @@ def choose_weapon(character: Character) -> None:
 
 
 def display_character(character: Character) -> None:
-    """Display character information including stats, HP, and weapon.
+    """Display character information including stats, HP, weapon, and XP.
     
     Args:
         character: The character to display.
     """
     print(f"\n{character.name} the {character.race.name}")
-    print(f"Level: {character.level}")
+    print(f"📊 Level: {character.level}")
+    print(f"✨ XP: {character.experience}/{character.experience_to_next_level}")
     print(f"\n⚔️  Weapon: {character.weapon.name} ({character.weapon.get_damage_description()})")
     print("\nStats:")
     for stat, value in character.stats.items():
         modifier = character.get_modifier(stat)
         print(f"{stat}: {value} ({'+' if modifier >= 0 else ''}{modifier})")
-    print(f"\nHP: {character.hp}/{character.max_hp}")
+    print(f"\n💚 HP: {character.hp}/{character.max_hp}")
 
 
 def combat_encounter(player: Character) -> bool:
@@ -165,6 +162,10 @@ def combat_encounter(player: Character) -> bool:
                     print(f"❌ The {combatant.name} missed!")
     
     winner = combat.get_winner()
+    if winner == player:
+        # Award XP for victory
+        player.gain_experience(goblin.xp_value)
+    
     return winner == player
 
 
@@ -197,6 +198,8 @@ def main() -> None:
             elif not player.is_alive():
                 print("\n" + "="*50)
                 print("💀 GAME OVER! Your character has fallen in battle.")
+                print(f"Final Level: {player.level}")
+                print(f"Total XP: {player.experience}")
                 print("="*50)
                 break
             else:
@@ -210,6 +213,8 @@ def main() -> None:
         elif choice == "4":
             print("\n" + "="*50)
             print("Thanks for playing!")
+            print(f"Final Level: {player.level}")
+            print(f"Total XP: {player.experience}")
             print("="*50)
             break
 

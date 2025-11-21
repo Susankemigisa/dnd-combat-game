@@ -164,3 +164,57 @@ def test_initialize_stats_calls_both_methods():
     # HP should be calculated
     assert char.hp > 0
     assert char.max_hp > 0
+def test_character_starts_at_level_1():
+    """Test character starts at level 1 with 0 XP."""
+    human_race = Human()
+    char = Character("TestChar", human_race, 10)
+    
+    assert char.level == 1
+    assert char.experience == 0
+    assert char.experience_to_next_level == 100
+
+
+def test_gain_experience():
+    """Test gaining experience points."""
+    human_race = Human()
+    char = Character("TestChar", human_race, 10)
+    char.stats = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
+    char.hp = 10
+    char.max_hp = 10
+    
+    char.gain_experience(50)
+    assert char.experience == 50
+    assert char.level == 1  # Not enough to level up
+
+
+def test_level_up():
+    """Test leveling up when reaching XP threshold."""
+    human_race = Human()
+    char = Character("TestChar", human_race, 10)
+    char.stats = {"STR": 10, "DEX": 10, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10}
+    char.hp = 12
+    char.max_hp = 12
+    
+    initial_max_hp = char.max_hp
+    
+    with patch("dndgame.dice.random.randint", return_value=5):
+        char.gain_experience(100)  # Exactly enough to level up
+    
+    assert char.level == 2
+    assert char.experience == 0  # XP reset after level up
+    assert char.experience_to_next_level == 150  # 1.5x increase
+    assert char.max_hp > initial_max_hp  # HP should increase
+
+
+def test_multiple_level_ups():
+    """Test multiple level ups from large XP gain."""
+    human_race = Human()
+    char = Character("TestChar", human_race, 10)
+    char.stats = {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}
+    char.hp = 10
+    char.max_hp = 10
+    
+    with patch("dndgame.dice.random.randint", return_value=4):
+        char.gain_experience(300)  # Enough for 2 levels
+    
+    assert char.level >= 2

@@ -9,7 +9,7 @@ class Character(Entity):
     
     A character has ability scores (STR, DEX, CON, INT, WIS, CHA), hit points,
     and belongs to a specific race which provides stat bonuses. Characters can
-    level up, engage in combat, and equip different weapons.
+    level up, gain experience, engage in combat, and equip different weapons.
     
     Inherits from Entity and adds race-specific bonuses and character
     progression mechanics.
@@ -22,6 +22,8 @@ class Character(Entity):
         hp: Current hit points.
         max_hp: Maximum hit points.
         level: Character level (starts at 1).
+        experience: Current experience points.
+        experience_to_next_level: XP needed to reach next level.
         armor_class: Defense rating, higher is better (default is 10).
         weapon: Currently equipped weapon.
     
@@ -44,6 +46,8 @@ class Character(Entity):
         super().__init__(name, base_hp)
         self.race: Race = race
         self.level: int = 1
+        self.experience: int = 0
+        self.experience_to_next_level: int = 100
         self.weapon: Weapon = get_starting_weapon_for_race(race.name)
     
     def initialize_stats(self) -> None:
@@ -119,3 +123,44 @@ class Character(Entity):
         old_weapon = self.weapon.name
         self.weapon = weapon
         print(f"\n{self.name} equipped {weapon.name} (was using {old_weapon})")
+    
+    def gain_experience(self, amount: int) -> None:
+        """Gain experience points and level up if threshold reached.
+        
+        Args:
+            amount: Experience points to gain.
+            
+        Example:
+            >>> character.gain_experience(50)
+            Gained 50 XP!
+        """
+        self.experience += amount
+        print(f"\n✨ Gained {amount} XP! (Total: {self.experience}/{self.experience_to_next_level})")
+        
+        while self.experience >= self.experience_to_next_level:
+            self.level_up()
+    
+    def level_up(self) -> None:
+        """Level up the character.
+        
+        Increases level, rolls for HP gain, and increases XP threshold
+        for next level.
+        """
+        self.level += 1
+        self.experience -= self.experience_to_next_level
+        self.experience_to_next_level = int(self.experience_to_next_level * 1.5)
+        
+        # Roll for HP increase (1d8 + CON modifier)
+        hp_roll = roll(8, 1)
+        hp_gain = hp_roll + self.get_modifier("CON")
+        hp_gain = max(1, hp_gain)  # Minimum 1 HP per level
+        
+        self.max_hp += hp_gain
+        self.hp += hp_gain  # Heal to full on level up
+        
+        print(f"\n{'='*50}")
+        print(f"🎉 LEVEL UP! You are now level {self.level}!")
+        print(f"{'='*50}")
+        print(f"💚 HP increased by {hp_gain}! (Now {self.hp}/{self.max_hp})")
+        print(f"📈 Next level at {self.experience_to_next_level} XP")
+        print(f"{'='*50}")

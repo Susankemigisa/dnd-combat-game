@@ -19,6 +19,7 @@ class Enemy(Entity):
         armor_class: Defense rating.
         challenge_rating: Difficulty rating (0.25 = easy, 1+ = harder).
         weapon: The enemy's equipped weapon.
+        xp_value: Experience points awarded for defeating this enemy.
     
     Example:
         >>> goblin = Enemy(
@@ -27,7 +28,8 @@ class Enemy(Entity):
         ...     stats={"STR": 8, "DEX": 14, "CON": 10, "INT": 10, "WIS": 8, "CHA": 8},
         ...     hp=7,
         ...     armor_class=13,
-        ...     weapon=WEAPONS["Shortsword"]
+        ...     weapon=WEAPONS["Shortsword"],
+        ...     xp_value=50
         ... )
         >>> print(goblin.name)
         Goblin Scout
@@ -41,7 +43,8 @@ class Enemy(Entity):
         hp: int,
         armor_class: int = 10,
         challenge_rating: float = 0.5,
-        weapon: Weapon | None = None
+        weapon: Weapon | None = None,
+        xp_value: int = 25
     ) -> None:
         """Initialize an enemy.
         
@@ -53,6 +56,7 @@ class Enemy(Entity):
             armor_class: Defense rating (default is 10).
             challenge_rating: Difficulty rating (default is 0.5).
             weapon: The enemy's weapon (default is Unarmed Strike).
+            xp_value: XP awarded for defeating (default is 25).
         """
         super().__init__(name, hp)
         self.enemy_type: str = enemy_type
@@ -62,6 +66,7 @@ class Enemy(Entity):
         self.max_hp = hp
         self.armor_class = armor_class
         self.weapon: Weapon = weapon if weapon else WEAPONS["Unarmed"]
+        self.xp_value: int = xp_value
     
     def initialize_stats(self) -> None:
         """Enemies have pre-defined stats, so this is a no-op.
@@ -77,7 +82,7 @@ def create_goblin(name: str = "Goblin") -> Enemy:
     
     Creates a goblin with typical stats: low strength, high dexterity,
     average constitution. Goblins are nimble but weak creatures armed
-    with shortswords.
+    with shortswords. Worth 50 XP when defeated.
     
     Args:
         name: Name for this specific goblin (default is "Goblin").
@@ -91,6 +96,8 @@ def create_goblin(name: str = "Goblin") -> Enemy:
         Sneaky Pete
         >>> print(goblin.enemy_type)
         Goblin
+        >>> print(goblin.xp_value)
+        50
     """
     return Enemy(
         name=name,
@@ -106,5 +113,6 @@ def create_goblin(name: str = "Goblin") -> Enemy:
         hp=7,
         armor_class=13,  # Leather armor + DEX
         challenge_rating=0.25,  # Easy enemy
-        weapon=WEAPONS["Shortsword"]
+        weapon=WEAPONS["Shortsword"],
+        xp_value=50  # XP reward
     )
