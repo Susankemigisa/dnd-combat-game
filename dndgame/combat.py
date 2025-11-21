@@ -1,6 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from dndgame.entity import Entity
 from dndgame.dice import roll
+
+if TYPE_CHECKING:
+    from dndgame.dungeon_master import DungeonMaster
 
 
 class Combat:

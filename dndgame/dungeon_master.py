@@ -18,6 +18,9 @@ class DungeonMaster:
         enabled: Whether AI narration is enabled.
     """
     
+    client: Optional[OpenAI]
+    enabled: bool
+    
     def __init__(self) -> None:
         """Initialize the Dungeon Master."""
         api_key = os.getenv("OPENAI_API_KEY")
