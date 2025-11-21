@@ -275,8 +275,8 @@ Potential features for future development:
 ## 👤 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/Susankemigisa)
-- LinkedIn: [Your LinkedIn]([https://linkedin.com/in/](https://www.linkedin.com/in/suzan-kemigisa-9a2074374/))
+- GitHub: https://github.com/Susankemigisa(https://github.com/Susankemigisa)
+- LinkedIn: https://www.linkedin.com/in/suzan-kemigisa-9a2074374/([https://linkedin.com/in/](https://www.linkedin.com/in/suzan-kemigisa-9a2074374/))
 
 ## 🙏 Acknowledgments
 
