@@ -5,6 +5,8 @@ from dndgame.races import AVAILABLE_RACES
 from dndgame.weapons import WEAPONS
 from dndgame.spells import SPELLS, HealingSpell
 from dndgame.entity import Entity
+from dndgame.dungeon_master import DungeonMaster
+from typing import Optional
 
 
 def create_character() -> Character:
@@ -107,14 +109,14 @@ def display_character(character: Character) -> None:
     print(f"\n💚 HP: {character.hp}/{character.max_hp}")
 
 
-def combat_encounter(player: Character) -> bool:
-    """Run a combat encounter."""
+def combat_encounter(player: Character, dm: Optional[DungeonMaster] = None) -> bool:
+    """Run a combat encounter with optional AI narration."""
     print("\n" + "="*50)
     print("A goblin appears!")
     print("="*50)
     
     goblin: Enemy = create_goblin()
-    combat = Combat(player, goblin)
+    combat = Combat(player, goblin, dungeon_master=dm)
     combat.roll_initiative()
     
     print(f"\nInitiative order: {[c.name for c in combat.initiative_order]}")
@@ -130,7 +132,6 @@ def combat_encounter(player: Character) -> bool:
                 continue
             
             if combatant == player:
-                # Player's turn
                 print(f"\n{player.name}'s HP: {player.hp}/{player.max_hp}")
                 print(f"Goblin HP: {goblin.hp}/{goblin.max_hp}")
                 print(f"⚔️  Your weapon: {player.weapon.name} ({player.weapon.get_damage_description()})")
@@ -160,6 +161,10 @@ def combat_encounter(player: Character) -> bool:
                         print(f"\n💥 You hit the goblin with your {player.weapon.name} for {damage} damage!")
                         if not goblin.is_alive():
                             print(f"The goblin has been defeated!")
+                            if dm:
+                                death_narration = dm.narrate_death(goblin.name, player.name)
+                                if death_narration:
+                                    print(f"\n📖 {death_narration}")
                     else:
                         print(f"\n❌ You missed!")
                 elif choice == "2":
@@ -188,8 +193,24 @@ def combat_encounter(player: Character) -> bool:
                             
                             result = spell.cast(player, target)
                             print(f"\n{result}")
+                            
+                            if dm:
+                                if isinstance(spell, HealingSpell):
+                                    effect = f"heals {player.name}"
+                                else:
+                                    effect = "deals damage"
+                                spell_narration = dm.narrate_spell_cast(
+                                    player.name, spell.name, target.name, effect
+                                )
+                                if spell_narration:
+                                    print(f"\n📖 {spell_narration}")
+                            
                             if not goblin.is_alive():
                                 print(f"The goblin has been defeated!")
+                                if dm:
+                                    death_narration = dm.narrate_death(goblin.name, player.name)
+                                    if death_narration:
+                                        print(f"\n📖 {death_narration}")
                         else:
                             print(f"\n❌ No spell slots available for level {spell.level}!")
                             continue
@@ -197,13 +218,16 @@ def combat_encounter(player: Character) -> bool:
                         print("Invalid choice!")
                         continue
             else:
-                # Enemy's turn
                 print(f"\n🗡️  {combatant.name}'s turn!")
                 damage = combat.attack(combatant, player)
                 if damage > 0:
                     print(f"💥 The {combatant.name} hits you with their {combatant.weapon.name} for {damage} damage!")
                     if not player.is_alive():
                         print(f"\n💀 You have been defeated by the {combatant.name}!")
+                        if dm:
+                            death_narration = dm.narrate_death(player.name, combatant.name)
+                            if death_narration:
+                                print(f"\n📖 {death_narration}")
                         return False
                 else:
                     print(f"❌ The {combatant.name} missed!")
@@ -216,7 +240,13 @@ def combat_encounter(player: Character) -> bool:
 
 
 def main() -> None:
-    """Main game loop."""
+    """Main game loop with optional AI narration."""
+    dm = DungeonMaster()
+    if dm.enabled:
+        print("\n🎲 AI Dungeon Master enabled! Prepare for epic narration! 🎲\n")
+    else:
+        print("\n📜 Playing in classic mode (no AI narration)\n")
+    
     player = create_character()
 
     while player.is_alive():
@@ -236,7 +266,7 @@ def main() -> None:
             print("Invalid choice! Please enter 1-5.")
 
         if choice == "1":
-            victory = combat_encounter(player)
+            victory = combat_encounter(player, dm)
             if victory:
                 print("\n" + "="*50)
                 print("🎉 VICTORY! You defeated the goblin!")
